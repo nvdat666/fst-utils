@@ -51,8 +51,9 @@
                     <font>
                         <Font name="System Bold" size="12.0" />
                     </font></Label>
-                <Label fx:id="labelDirectory" layoutX="110.0" layoutY="171.0" text="No directory selected." />
-                     <Button fx:id="buttonChooseDirectory" layoutX="447.0" layoutY="167.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="..." />
+                <Label fx:id="labelDirectory" layoutX="97.0" layoutY="171.0" text="No directory selected." />
+                     <Button fx:id="buttonChooseDirectory" layoutX="333.0" layoutY="167.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
+                     <Button fx:id="buttonOpenDir" layoutX="420.0" layoutY="167.0" mnemonicParsing="false" onAction="#onOpenDir" text="Open Dir" />
             </children></AnchorPane>
         </content>
       </Tab>

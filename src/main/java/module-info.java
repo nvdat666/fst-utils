@@ -15,6 +15,7 @@ module com.example.fstutils {
     requires poi;
     requires org.json;
     requires org.fxmisc.richtext;
+    requires java.desktop;
 
     opens com.example.fstutils to javafx.fxml;
     exports com.example.fstutils;

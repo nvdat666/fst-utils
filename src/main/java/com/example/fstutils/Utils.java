@@ -32,4 +32,10 @@ public class Utils {
         }
         return partitions;
     }
+    public static boolean hasText(String text) {
+
+      
+        return text != null && !text.isEmpty() && !text.isBlank();
+    }
+    
 }

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.awt.Desktop;
 
 public class MainController {
     @FXML
@@ -43,6 +44,8 @@ public class MainController {
     private Button buttonSelectFile;
     @FXML
     private Button buttonConvert;
+    @FXML
+    private Button buttonOpenDir;
     @FXML
     private Button buttonChooseDirectory;
     @FXML
@@ -116,6 +119,20 @@ public class MainController {
             buttonConvert.setDisable(true);
             clearInformationFile();
         }
+    }
+
+    @FXML
+    protected void onOpenDir(ActionEvent e) {
+        Desktop desktop = Desktop.getDesktop();
+        if (!validateDirectorySaveFile(pathDirectoryToSave)) {
+            return;
+        } 
+        try {
+            File dirToOpen = new File(pathDirectoryToSave);
+            desktop.open(dirToOpen);
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        } 
     }
 
     @FXML
@@ -291,13 +308,13 @@ public class MainController {
                     Row headerRow = sheet.createRow(0);
                     Object temp = ((JSONObject) jsonArray.get(0)).get(COLUMNs[0]);
                     if (COLUMNs.length == 1 && temp instanceof JSONObject) {
-                        List<String> setFields1 = new ArrayList<>((Set<String>) (((JSONObject)temp).keySet()));
+                        List<String> setFields1 = new ArrayList<>((Set<String>) (((JSONObject) temp).keySet()));
                         for (int i = 0; i < setFields1.size(); i++) {
                             Cell cell = headerRow.createCell(i);
                             cell.setCellValue(COLUMNs[0]);
                             cell.setCellStyle(headerCellStyle);
                         }
-                        sheet.addMergedRegion(new CellRangeAddress(0,0,0,setFields1.size() -1));
+                        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, setFields1.size() - 1));
                     } else {
                         for (int col = 0; col < COLUMNs.length; col++) {
                             Cell cell = headerRow.createCell(col);
@@ -305,8 +322,8 @@ public class MainController {
                             cell.setCellStyle(headerCellStyle);
                         }
                     }
-                       
-                    
+
+
                     updateProgress(progress++, 10);
 
                     // CellStyle for Age
@@ -318,8 +335,8 @@ public class MainController {
                     double total = jsonArray.size() / 6d;
                     Object[] arrayObj = jsonArray.toArray();
                     List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
-                    Double d = list.size()/6d;
-                    int dive = (int)Math.ceil(d);
+                    Double d = list.size() / 6d;
+                    int dive = (int) Math.ceil(d);
                     List<List<Object>> fullList = Utils.partition(list, dive);
                     int countRecord = 0;
                     for (List<Object> patrionList : fullList) {
@@ -350,7 +367,7 @@ public class MainController {
                         showLog("Created " + countRecord + " of " + list.size() + " row.");
                         updateProgress(progress++, 10);
                     }
-                    
+
                     showLog("Saving file to directory..");
                     FileOutputStream fileOut = new FileOutputStream(filePath);
                     workbook.write(fileOut);
