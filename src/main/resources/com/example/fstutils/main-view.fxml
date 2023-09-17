@@ -6,7 +6,7 @@
 <?import javafx.scene.text.*?>
 <?import org.fxmisc.richtext.*?>
 
-<VBox fx:id="ap" alignment="CENTER" prefHeight="415.0" prefWidth="506.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.fstutils.MainController">
+<VBox fx:id="ap" alignment="CENTER" prefHeight="483.0" prefWidth="506.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.fstutils.MainController">
   <TabPane prefHeight="472.0" prefWidth="506.0" tabClosingPolicy="UNAVAILABLE">
     <tabs>
       <Tab text="  JSON Converter  ">
@@ -42,18 +42,19 @@
               <Label fx:id="fileName" layoutX="239.0" layoutY="28.0" text="fileName" />
               <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
               <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
-              <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="210.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
+              <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="252.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
                 
-              <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="235.0" prefHeight="139.0" prefWidth="479.0" wrapText="true" />
+              <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="277.0" prefHeight="139.0" prefWidth="479.0" wrapText="true" />
 
-                <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="35.0" layoutX="14.0" layoutY="162.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
-                <Label layoutX="34.0" layoutY="171.0" text="Save to:">
+                <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="69.0" layoutX="14.0" layoutY="162.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
+                <Label layoutX="34.0" layoutY="174.0" text="Save to:">
                     <font>
                         <Font name="System Bold" size="12.0" />
                     </font></Label>
-                <Label fx:id="labelDirectory" layoutX="97.0" layoutY="171.0" text="No directory selected." />
-                     <Button fx:id="buttonChooseDirectory" layoutX="333.0" layoutY="167.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
-                     <Button fx:id="buttonOpenDir" layoutX="420.0" layoutY="167.0" mnemonicParsing="false" onAction="#onOpenDir" text="Open Dir" />
+                <Label fx:id="labelDirectory" layoutX="89.0" layoutY="174.0" text="No directory selected." />
+                     <Button fx:id="buttonChooseDirectory" layoutX="402.0" layoutY="170.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
+                     <Button fx:id="buttonOpenDir" layoutX="418.0" layoutY="199.0" mnemonicParsing="false" onAction="#onOpenDir" prefWidth="64.0" text="Open Dir" />
+                     <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="203.0" mnemonicParsing="false" text="Auto open file when convert finished" />
             </children></AnchorPane>
         </content>
       </Tab>

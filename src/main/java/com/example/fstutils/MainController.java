@@ -5,12 +5,14 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.fxmisc.richtext.InlineCssTextArea;
@@ -19,6 +21,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,8 +29,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.awt.Desktop;
 
 public class MainController {
     @FXML
@@ -45,14 +48,13 @@ public class MainController {
     @FXML
     private Button buttonConvert;
     @FXML
-    private Button buttonOpenDir;
-    @FXML
     private Button buttonChooseDirectory;
     @FXML
-    private ProgressBar progressBar;
+    private ProgressBar progressBar;@FXML
+    private CheckBox checkboxOpenFile;
     private String pathDirectoryToSave;
     private File file;
-
+//TODO: keep current dir when choose file
     @FXML
     public void initialize() {
         clearInformationFile();
@@ -61,25 +63,7 @@ public class MainController {
         pathDirectoryToSave = initialDirectory.getAbsolutePath();
     }
 
-    public void showLog(String text) {
-        Platform.runLater(() -> {
-            outputLogArea.append(" * " + text + "\n", "-fx-fill: black;");
-            outputLogArea.moveTo(outputLogArea.getLength());
-            outputLogArea.requestFollowCaret();
-        });
-
-//        outputLogArea.requestFocus();
-    }
-
-    public void showError(String text) {
-        Platform.runLater(() -> outputLogArea.append("* " + text + "\n", "-fx-fill: red;"));
-
-    }
-
-    public void showSuccess(String text) {
-        Platform.runLater(() -> outputLogArea.append("* " + text + "\n", "-fx-fill: blue;"));
-
-    }
+    
 
     private void clearInformationFile() {
         if (this.file != null) {
@@ -335,7 +319,7 @@ public class MainController {
                     double total = jsonArray.size() / 6d;
                     Object[] arrayObj = jsonArray.toArray();
                     List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
-                    Double d = list.size() / 6d;
+                    double d = list.size() / 6d;
                     int dive = (int) Math.ceil(d);
                     List<List<Object>> fullList = Utils.partition(list, dive);
                     int countRecord = 0;
@@ -344,7 +328,6 @@ public class MainController {
                         for (Object o : patrionList) {
 
                             JSONObject component = (JSONObject) o;
-                            Set<String> setFields = component.keySet();
 
                             Row row = sheet.createRow(rowIdx++);
 
@@ -394,7 +377,15 @@ public class MainController {
         // If the task completed successfully, perform other updates here
         task.setOnSucceeded(wse -> {
             showSuccess("Convert json successfully!");
-
+            if (checkboxOpenFile.isSelected()) {
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    File fileToOper = new File(filePath);
+                    desktop.open(fileToOper);
+                } catch (Exception ex) {
+                    showError("Open file not success with exception: " + ex.getMessage());
+                }
+            }
         });
 
         // Before starting our task, we need to bind our UI values to the properties on the task
@@ -404,5 +395,21 @@ public class MainController {
         // Now, start the task on a background thread
         new Thread(task).start();
     }
+    public void showLog(String text) {
+        Platform.runLater(() -> {
+            outputLogArea.append(" * " + text + "\n", "-fx-fill: black;");
+            outputLogArea.moveTo(outputLogArea.getLength());
+            outputLogArea.requestFollowCaret();
+        });
+//        outputLogArea.requestFocus();
+    }
 
+    public void showError(String text) {
+        Platform.runLater(() -> outputLogArea.append(" * " + text + "\n", "-fx-fill: red;"));
+
+    }
+
+    public void showSuccess(String text) {
+        Platform.runLater(() -> outputLogArea.append(" * " + text + "\n", "-fx-fill: blue;"));
+    }
 }
