@@ -303,7 +303,7 @@ public class MainController {
                     for (int i = 0; i < jsonArray.size(); i++) {
                         if (i % total == 0) {
                             if (i != 0) {
-                                showLog("Created " + i + " of " + jsonArray.size() + " row");
+//                                showLog("Created " + i + " of " + jsonArray.size() + " row");
                                 updateProgress(progress++, 10);
                             }
                         }
