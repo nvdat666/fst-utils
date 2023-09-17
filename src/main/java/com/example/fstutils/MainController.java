@@ -11,6 +11,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.json.simple.JSONArray;
@@ -25,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MainController {
     @FXML
@@ -51,7 +53,7 @@ public class MainController {
     @FXML
     public void initialize() {
         clearInformationFile();
-        File initialDirectory = new File(System.getProperty("user.home") + File.separator + "Downloads");
+        File initialDirectory = new File(System.getProperty("user.home") + File.separator + "Documents");
         labelDirectory.setText(initialDirectory.getAbsolutePath());
         pathDirectoryToSave = initialDirectory.getAbsolutePath();
     }
@@ -67,18 +69,18 @@ public class MainController {
     }
 
     public void showError(String text) {
-        Platform.runLater(() -> outputLogArea.append("- " + text + "\n", "-fx-fill: red;"));
+        Platform.runLater(() -> outputLogArea.append("* " + text + "\n", "-fx-fill: red;"));
 
     }
 
     public void showSuccess(String text) {
-        Platform.runLater(() -> outputLogArea.append("- " + text + "\n", "-fx-fill: blue;"));
+        Platform.runLater(() -> outputLogArea.append("* " + text + "\n", "-fx-fill: blue;"));
 
     }
 
     private void clearInformationFile() {
         if (this.file != null) {
-            showLog("File " + fileName.getText() + " has been removed");
+            showLog("File " + fileName.getText() + " has been removed.");
         }
         this.file = null;
         fileName.setText("");
@@ -93,7 +95,7 @@ public class MainController {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file..");
         fileChooser.setInitialDirectory(
-                new File(System.getProperty("user.home") + File.separator + "Downloads")
+                new File(System.getProperty("user.home") + File.separator + "Documents")
         );
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Text Files", "*.json", "*.txt"));
@@ -108,7 +110,7 @@ public class MainController {
             long bytes = file.length();
             double kilobytes = ((double) bytes / 1024);
             size.setText(String.format("%.2f KB", kilobytes));
-            showLog("File " + fileNameStr + " has been chosen");
+            showLog("File '" + fileNameStr + "' has been chosen");
             buttonConvert.setDisable(false);
         } else {
             buttonConvert.setDisable(true);
@@ -191,14 +193,15 @@ public class MainController {
             JSONObject jsonObject = (JSONObject) obj;
 
             PopupChooseFieldsController wc = new PopupChooseFieldsController();
-            wc.showStage(jsonObject);
-            String fieldToConvert = wc.getData();
+            Map<String, JSONArray> map = wc.showStage(jsonObject);
+            String idToGet = wc.getIdToGet();
 
-            if (fieldToConvert == null || fieldToConvert.isEmpty() || fieldToConvert.isBlank()) {
+            if (idToGet == null || idToGet.isEmpty() || idToGet.isBlank()) {
                 showError("No field has been choose!");
                 return;
             }
-            jsonArrayToConvert = (JSONArray) jsonObject.get(fieldToConvert);
+
+            jsonArrayToConvert = map.get(idToGet);
         } else {
             showError("Data not instance of jsonArray or jsonObject!");
             return;
@@ -209,7 +212,7 @@ public class MainController {
             return;
         }
 
-        outputLogArea.clear();
+//        outputLogArea.clear();
         String fileNameExcel = file.getName().replaceAll(".json", ".xlsx");
 
         writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileNameExcel);
@@ -284,13 +287,26 @@ public class MainController {
                     headerCellStyle.setFont(headerFont);
 
                     // Header
-                    showLog("Creating column header..");
+                    showLog("Creating header..");
                     Row headerRow = sheet.createRow(0);
-                    for (int col = 0; col < COLUMNs.length; col++) {
-                        Cell cell = headerRow.createCell(col);
-                        cell.setCellValue(COLUMNs[col]);
-                        cell.setCellStyle(headerCellStyle);
+                    Object temp = ((JSONObject) jsonArray.get(0)).get(COLUMNs[0]);
+                    if (COLUMNs.length == 1 && temp instanceof JSONObject) {
+                        List<String> setFields1 = new ArrayList<>((Set<String>) (((JSONObject)temp).keySet()));
+                        for (int i = 0; i < setFields1.size(); i++) {
+                            Cell cell = headerRow.createCell(i);
+                            cell.setCellValue(COLUMNs[0]);
+                            cell.setCellStyle(headerCellStyle);
+                        }
+                        sheet.addMergedRegion(new CellRangeAddress(0,0,0,setFields1.size() -1));
+                    } else {
+                        for (int col = 0; col < COLUMNs.length; col++) {
+                            Cell cell = headerRow.createCell(col);
+                            cell.setCellValue(COLUMNs[col]);
+                            cell.setCellStyle(headerCellStyle);
+                        }
                     }
+                       
+                    
                     updateProgress(progress++, 10);
 
                     // CellStyle for Age
@@ -299,31 +315,48 @@ public class MainController {
 
                     int rowIdx = 1;
                     showLog("Creating row data..");
-                    int total = jsonArray.size() / 6;
-                    for (int i = 0; i < jsonArray.size(); i++) {
-                        if (i % total == 0) {
-                            if (i != 0) {
-//                                showLog("Created " + i + " of " + jsonArray.size() + " row");
-                                updateProgress(progress++, 10);
+                    double total = jsonArray.size() / 6d;
+                    Object[] arrayObj = jsonArray.toArray();
+                    List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
+                    Double d = list.size()/6d;
+                    int dive = (int)Math.ceil(d);
+                    List<List<Object>> fullList = Utils.partition(list, dive);
+                    int countRecord = 0;
+                    for (List<Object> patrionList : fullList) {
+                        countRecord += patrionList.size();
+                        for (Object o : patrionList) {
+
+                            JSONObject component = (JSONObject) o;
+                            Set<String> setFields = component.keySet();
+
+                            Row row = sheet.createRow(rowIdx++);
+
+                            for (int j = 0; j < COLUMNs.length; j++) {
+                                Object value = (component.get(COLUMNs[j]));
+                                if (value instanceof JSONObject) {
+                                    JSONObject valueObject = (JSONObject) value;
+                                    List<String> setFields1 = new ArrayList<>((Set<String>) valueObject.keySet());
+
+                                    for (int i1 = 0; i1 < setFields1.size(); i1++) {
+                                        row.createCell(i1).setCellValue(String.valueOf(valueObject.get(setFields1.get(i1))));
+
+                                    }
+                                } else {
+                                    row.createCell(j).setCellValue(String.valueOf(value));
+
+                                }
                             }
                         }
-                        
-                        JSONObject component = (JSONObject) jsonArray.get(i);
-                        Row row = sheet.createRow(rowIdx++);
-
-                        for (int j = 0; j < COLUMNs.length; j++) {
-                            row.createCell(j).setCellValue(String.valueOf(component.get(COLUMNs[j])));
-                        }
+                        showLog("Created " + countRecord + " of " + list.size() + " row.");
+                        updateProgress(progress++, 10);
                     }
-//                    updateProgress(progress++, 10);
-
-
+                    
                     showLog("Saving file to directory..");
                     FileOutputStream fileOut = new FileOutputStream(filePath);
                     workbook.write(fileOut);
                     fileOut.close();
                     workbook.close();
-                    updateProgress(progress++, 10);
+                    updateProgress(10, 10);
                     showLog("File has been saved to '" + filePath + "'.");
 
                     return filePath;

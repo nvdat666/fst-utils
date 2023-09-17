@@ -43,7 +43,8 @@
               <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
               <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
               <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="210.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
-              <InlineCssTextArea fx:id="outputLogArea" layoutX="14.0" layoutY="235.0" prefHeight="139.0" prefWidth="479.0" wrapText="true" />
+                
+              <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="235.0" prefHeight="139.0" prefWidth="479.0" wrapText="true" />
 
                 <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="35.0" layoutX="14.0" layoutY="162.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
                 <Label layoutX="34.0" layoutY="171.0" text="Save to:">
