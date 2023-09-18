@@ -114,10 +114,9 @@ public class MainController {
     protected void onActionChangeCheckboxClipboard(ActionEvent e) {
 
         if (checkboxGetSourceFromClipBoard.isSelected()) {
-            showLog("Using source from clipboard.");
             clearInformationFile();
             buttonSelectFile.setDisable(true);
-            Clipboard clipboard = Clipboard.getSystemClipboard();
+            showLog("Using source from clipboard.");
 //            System.out.println(clipboard.getString());
         } else {
             showLog("Using source from file.");
