@@ -7,62 +7,65 @@
 <?import org.fxmisc.richtext.*?>
 
 <VBox fx:id="ap" alignment="CENTER" prefHeight="483.0" prefWidth="506.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.fstutils.MainController">
-  <TabPane prefHeight="472.0" prefWidth="506.0" tabClosingPolicy="UNAVAILABLE">
-    <tabs>
-      <Tab text="  JSON Converter  ">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="386.0" prefWidth="506.0">
-            <children>
-              <Pane layoutX="202.0" layoutY="22.0" prefHeight="79.0" prefWidth="332.0" />
-              <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="84.0" layoutX="14.0" layoutY="14.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="476.0" />
-              <Button fx:id="buttonSelectFile" layoutX="34.0" layoutY="28.0" mnemonicParsing="false" onAction="#onSelectFileClick" prefHeight="58.0" prefWidth="96.0" text="Select File.." />
-              <Label layoutX="159.0" layoutY="27.0" text="File name:">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Label>
-              <Label layoutX="159.0" layoutY="48.0" text="Type:">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Label>
-              <Label layoutX="160.0" layoutY="69.0" text="Size:">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Label>
-              <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="40.0" layoutX="14.0" layoutY="110.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="338.0" />
-              <Label layoutX="34.0" layoutY="121.0" text="Convert to:">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Label>
-              <RadioButton layoutX="133.0" layoutY="121.0" mnemonicParsing="false" selected="true" text="XLSX" />
-              <RadioButton disable="true" layoutX="221.0" layoutY="121.0" mnemonicParsing="false" text="Byte data" />
-              <Button fx:id="buttonConvert" disable="true" layoutX="360.0" layoutY="111.0" mnemonicParsing="false" onAction="#onClickButtonConvert" prefHeight="38.0" prefWidth="132.0" text="Convert">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Button>
-              <Label fx:id="fileName" layoutX="239.0" layoutY="28.0" text="fileName" />
-              <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
-              <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
-              <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="252.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
-                
-              <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="277.0" prefHeight="139.0" prefWidth="479.0" wrapText="true" />
+    <TabPane prefHeight="496.0" prefWidth="506.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+            <Tab text="  JSON Converter  ">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="386.0" prefWidth="506.0">
+                        <children>
+                            <Pane layoutX="202.0" layoutY="22.0" prefHeight="79.0" prefWidth="332.0" />
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="115.0" layoutX="14.0" layoutY="14.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="476.0" />
+                            <Button fx:id="buttonSelectFile" layoutX="34.0" layoutY="28.0" mnemonicParsing="false" onAction="#onSelectFileClick" prefHeight="58.0" prefWidth="96.0" text="Select File.." />
+                            <Label layoutX="159.0" layoutY="27.0" text="File name:">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <Label layoutX="159.0" layoutY="48.0" text="Type:">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <Label layoutX="160.0" layoutY="69.0" text="Size:">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="40.0" layoutX="14.0" layoutY="142.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="338.0" />
+                            <Label layoutX="34.0" layoutY="153.0" text="Convert to:">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <RadioButton layoutX="133.0" layoutY="153.0" mnemonicParsing="false" selected="true" text="XLSX" />
+                            <Button fx:id="buttonConvert" layoutX="360.0" layoutY="143.0" mnemonicParsing="false" onAction="#onClickButtonConvert" prefHeight="38.0" prefWidth="132.0" text="Convert" textFill="#0f41f5">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Button>
+                            <Label fx:id="fileName" layoutX="239.0" layoutY="28.0" text="fileName" />
+                            <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
+                            <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
+                            <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="272.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
 
-                <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="69.0" layoutX="14.0" layoutY="162.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
-                <Label layoutX="34.0" layoutY="174.0" text="Save to:">
-                    <font>
-                        <Font name="System Bold" size="12.0" />
-                    </font></Label>
-                <Label fx:id="labelDirectory" layoutX="89.0" layoutY="174.0" text="No directory selected." />
-                     <Button fx:id="buttonChooseDirectory" layoutX="402.0" layoutY="170.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
-                     <Button fx:id="buttonOpenDir" layoutX="418.0" layoutY="199.0" mnemonicParsing="false" onAction="#onOpenDir" prefWidth="64.0" text="Open Dir" />
-                     <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="203.0" mnemonicParsing="false" text="Auto open file when convert finished" />
-            </children></AnchorPane>
-        </content>
-      </Tab>
-      <Tab text="Untitled Tab 2">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-        </content>
-      </Tab>
-    </tabs>
-  </TabPane>
+                            <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="293.0" prefHeight="146.0" prefWidth="479.0" wrapText="true" />
+
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="69.0" layoutX="14.0" layoutY="193.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
+                            <Label layoutX="34.0" layoutY="205.0" text="Save to:">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <Label fx:id="labelDirectory" layoutX="89.0" layoutY="205.0" text="No directory selected." />
+                            <Button fx:id="buttonChooseDirectory" layoutX="402.0" layoutY="201.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
+                            <Button fx:id="buttonOpenDir" layoutX="418.0" layoutY="230.0" mnemonicParsing="false" onAction="#onOpenDir" prefWidth="64.0" text="Open Dir" />
+                            <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="234.0" mnemonicParsing="false" text="Auto open file when convert finished" />
+                            <CheckBox fx:id="checkboxGetSourceFromClipBoard" layoutX="34.0" layoutY="101.0" mnemonicParsing="false" onAction="#onActionChangeCheckboxClipboard" text="Get source from clipboard (not recommend)" />
+                        </children></AnchorPane>
+                </content>
+            </Tab>
+            <Tab text="About">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                        <children>
+                            <Label layoutX="220.0" layoutY="23.0" text=" to UyenNT7" />
+                        </children></AnchorPane>
+                </content>
+            </Tab>
+        </tabs>
+    </TabPane>
 </VBox>

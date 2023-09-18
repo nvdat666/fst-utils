@@ -8,6 +8,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -18,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
@@ -28,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,11 +54,15 @@ public class MainController {
     @FXML
     private Button buttonChooseDirectory;
     @FXML
-    private ProgressBar progressBar;@FXML
+    private ProgressBar progressBar;
+    @FXML
     private CheckBox checkboxOpenFile;
+    @FXML
+    private CheckBox checkboxGetSourceFromClipBoard;
     private String pathDirectoryToSave;
     private File file;
-//TODO: keep current dir when choose file
+
+    //TODO: keep current dir when choose file
     @FXML
     public void initialize() {
         clearInformationFile();
@@ -63,7 +71,6 @@ public class MainController {
         pathDirectoryToSave = initialDirectory.getAbsolutePath();
     }
 
-    
 
     private void clearInformationFile() {
         if (this.file != null) {
@@ -98,10 +105,23 @@ public class MainController {
             double kilobytes = ((double) bytes / 1024);
             size.setText(String.format("%.2f KB", kilobytes));
             showLog("File '" + fileNameStr + "' has been chosen");
-            buttonConvert.setDisable(false);
         } else {
-            buttonConvert.setDisable(true);
             clearInformationFile();
+        }
+    }
+
+    @FXML
+    protected void onActionChangeCheckboxClipboard(ActionEvent e) {
+
+        if (checkboxGetSourceFromClipBoard.isSelected()) {
+            showLog("Using source from clipboard.");
+            clearInformationFile();
+            buttonSelectFile.setDisable(true);
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+//            System.out.println(clipboard.getString());
+        } else {
+            showLog("Using source from file.");
+            buttonSelectFile.setDisable(false);
         }
     }
 
@@ -110,13 +130,13 @@ public class MainController {
         Desktop desktop = Desktop.getDesktop();
         if (!validateDirectorySaveFile(pathDirectoryToSave)) {
             return;
-        } 
+        }
         try {
             File dirToOpen = new File(pathDirectoryToSave);
             desktop.open(dirToOpen);
         } catch (Exception ex) {
             showError(ex.getMessage());
-        } 
+        }
     }
 
     @FXML
@@ -148,53 +168,65 @@ public class MainController {
 
     @FXML
     protected void onClickButtonConvert(ActionEvent e) {
-        File file = this.file;
+        String contentToConvert;
 
-        if (!validateDirectorySaveFile(pathDirectoryToSave)) {
+        if (checkboxGetSourceFromClipBoard.isSelected()) {
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            contentToConvert = clipboard.getString();
+        } else {
+            File file = this.file;
+            if (!validateDirectorySaveFile(pathDirectoryToSave))
+                return;
+            if (!validateFile(file))
+                return;
+
+            Path path = file.toPath();
+            try {
+                contentToConvert = Files.readString(path);
+            } catch (IOException ex) {
+                showError("Read content of file fail!");
+                return;
+            }
+        }
+
+
+        if (contentToConvert == null || contentToConvert.isEmpty() || contentToConvert.isBlank()) {
+            showError("Content to convert is empty!");
             return;
         }
-        if (!validateFile(file)) {
-            return;
-        }
-
-        Path path = file.toPath();
-        String contentFromFile;
-
-        try {
-            contentFromFile = Files.readString(path);
-        } catch (IOException ex) {
-            showError("Read content of file fail!");
-            return;
-        }
-
-        if (contentFromFile == null || contentFromFile.isEmpty() || contentFromFile.isBlank()) {
-            showError("Content of file is empty!");
-            return;
-        }
-        contentFromFile = contentFromFile.strip();
+        contentToConvert = contentToConvert.strip();
 
         JSONParser parser = new JSONParser();
+        ContainerFactory containerFactory = new ContainerFactory() {
+            public List creatArrayContainer() {
+                return new LinkedList();
+            }
+
+            public Map createObjectContainer() {
+                return new LinkedHashMap();
+            }
+        };
         Object obj;
         try {
-            obj = parser.parse(contentFromFile);
+            obj = parser.parse(contentToConvert, containerFactory);
         } catch (ParseException ex) {
-            showError("Parse json file error!");
+            showError("Parse content error!");
             return;
         }
 
-        JSONArray jsonArrayToConvert;
-        if (obj instanceof JSONArray) {
-            jsonArrayToConvert = (JSONArray) obj;
+        LinkedList jsonArrayToConvert;
+        if (obj instanceof LinkedList) {
+            jsonArrayToConvert = (LinkedList) obj;
             if (jsonArrayToConvert.isEmpty()) {
                 showError("JsonArray is empty!");
                 return;
             }
 
-        } else if (obj instanceof JSONObject) {
-            JSONObject jsonObject = (JSONObject) obj;
+        } else if (obj instanceof LinkedHashMap) {
+            LinkedHashMap jsonObject = (LinkedHashMap) obj;
 
             PopupChooseFieldsController wc = new PopupChooseFieldsController();
-            Map<String, JSONArray> map = wc.showStage(jsonObject);
+            Map<String, LinkedList> map = wc.showStage(jsonObject);
             String idToGet = wc.getIdToGet();
 
             if (idToGet == null || idToGet.isEmpty() || idToGet.isBlank()) {
@@ -214,9 +246,15 @@ public class MainController {
         }
 
 //        outputLogArea.clear();
-        String fileNameExcel = file.getName().replaceAll(".json", ".xlsx");
+        String fileName;
+        if (checkboxGetSourceFromClipBoard.isSelected()) {
+            SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
+            fileName = "From_Clipboard_" + SIMPLE_DATE_FORMAT.format(new Date()) + ".xlsx";
+        } else {
+            fileName = file.getName().replaceAll(".json", ".xlsx");
+        }
 
-        writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileNameExcel);
+        writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileName);
 
     }
 
@@ -255,7 +293,7 @@ public class MainController {
         return true;
     }
 
-    private void writeObjects2ExcelFile(JSONArray jsonArray, String filePath) {
+    private void writeObjects2ExcelFile(LinkedList jsonArray, String filePath) {
 
         // Create a background Task
         Task<String> task = new Task<>() {
@@ -265,7 +303,7 @@ public class MainController {
                     int progress = 0;
                     updateProgress(progress++, 10);
 
-                    JSONObject firstObj = (JSONObject) jsonArray.get(0);
+                    LinkedHashMap firstObj = (LinkedHashMap) jsonArray.get(0);
                     Set<String> header = firstObj.keySet();
 
                     String[] COLUMNs = new String[header.size()];
@@ -289,15 +327,22 @@ public class MainController {
 
                     // Header
                     showLog("Creating header..");
-                    Row headerRow = sheet.createRow(0);
-                    Object temp = ((JSONObject) jsonArray.get(0)).get(COLUMNs[0]);
-                    if (COLUMNs.length == 1 && temp instanceof JSONObject) {
-                        List<String> setFields1 = new ArrayList<>((Set<String>) (((JSONObject) temp).keySet()));
+                    int rowIdx = 0;
+
+                    Row headerRow = sheet.createRow(rowIdx++);
+                    Object temp = ((LinkedHashMap) jsonArray.get(0)).get(COLUMNs[0]);
+                    if (COLUMNs.length == 1 && temp instanceof LinkedHashMap) {
+                        List<String> setFields1 = new ArrayList<>((Set<String>) (((LinkedHashMap) temp).keySet()));
+                        Row headerRow2 = sheet.createRow(rowIdx++);
                         for (int i = 0; i < setFields1.size(); i++) {
                             Cell cell = headerRow.createCell(i);
                             cell.setCellValue(COLUMNs[0]);
                             cell.setCellStyle(headerCellStyle);
+                            Cell cell2 = headerRow2.createCell(i);
+                            cell2.setCellValue(setFields1.get(i));
+                            cell2.setCellStyle(headerCellStyle);
                         }
+
                         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, setFields1.size() - 1));
                     } else {
                         for (int col = 0; col < COLUMNs.length; col++) {
@@ -314,9 +359,7 @@ public class MainController {
                     CellStyle ageCellStyle = workbook.createCellStyle();
                     ageCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#"));
 
-                    int rowIdx = 1;
                     showLog("Creating row data..");
-                    double total = jsonArray.size() / 6d;
                     Object[] arrayObj = jsonArray.toArray();
                     List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
                     double d = list.size() / 6d;
@@ -327,14 +370,14 @@ public class MainController {
                         countRecord += patrionList.size();
                         for (Object o : patrionList) {
 
-                            JSONObject component = (JSONObject) o;
+                            LinkedHashMap component = (LinkedHashMap) o;
 
                             Row row = sheet.createRow(rowIdx++);
 
                             for (int j = 0; j < COLUMNs.length; j++) {
                                 Object value = (component.get(COLUMNs[j]));
-                                if (value instanceof JSONObject) {
-                                    JSONObject valueObject = (JSONObject) value;
+                                if (value instanceof LinkedHashMap) {
+                                    LinkedHashMap valueObject = (LinkedHashMap) value;
                                     List<String> setFields1 = new ArrayList<>((Set<String>) valueObject.keySet());
 
                                     for (int i1 = 0; i1 < setFields1.size(); i1++) {
@@ -357,7 +400,7 @@ public class MainController {
                     fileOut.close();
                     workbook.close();
                     updateProgress(10, 10);
-                    showLog("File has been saved to '" + filePath + "'.");
+                    showSuccess("File has been saved to '" + filePath + "'.");
 
                     return filePath;
                 } catch (Exception e) {
@@ -378,6 +421,8 @@ public class MainController {
         task.setOnSucceeded(wse -> {
             showSuccess("Convert json successfully!");
             if (checkboxOpenFile.isSelected()) {
+                showSuccess("File will be auto open..!");
+
                 Desktop desktop = Desktop.getDesktop();
                 try {
                     File fileToOper = new File(filePath);
@@ -395,21 +440,32 @@ public class MainController {
         // Now, start the task on a background thread
         new Thread(task).start();
     }
+
     public void showLog(String text) {
         Platform.runLater(() -> {
             outputLogArea.append(" * " + text + "\n", "-fx-fill: black;");
-            outputLogArea.moveTo(outputLogArea.getLength());
-            outputLogArea.requestFollowCaret();
+            moveCaretToEnd();
         });
 //        outputLogArea.requestFocus();
     }
 
     public void showError(String text) {
-        Platform.runLater(() -> outputLogArea.append(" * " + text + "\n", "-fx-fill: red;"));
+        Platform.runLater(() -> {
+            outputLogArea.append(" * " + text + "\n", "-fx-fill: red;");
+            moveCaretToEnd();
+        });
 
     }
 
     public void showSuccess(String text) {
-        Platform.runLater(() -> outputLogArea.append(" * " + text + "\n", "-fx-fill: blue;"));
+        Platform.runLater(() -> {
+            outputLogArea.append(" * " + text + "\n", "-fx-fill: blue;");
+            moveCaretToEnd();
+        });
+    }
+
+    private void moveCaretToEnd() {
+        outputLogArea.moveTo(outputLogArea.getLength());
+        outputLogArea.requestFollowCaret();
     }
 }

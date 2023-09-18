@@ -16,7 +16,8 @@ public class PopupChooseFieldsController {
     private String idToGet;
     ToggleGroup toggleGroup = new ToggleGroup();
     javafx.collections.ObservableList<javafx.scene.Node> children;
-    private Map<String, JSONArray> findJsonArrayInJsonObject(JSONObject jsonObject, Map<String, JSONArray> map) {
+
+    private Map<String, LinkedList> findJsonArrayInJsonObject(LinkedHashMap jsonObject, Map<String, LinkedList> map) {
         Set<String> setFields = jsonObject.keySet();
         for (String field : setFields) {
             Object obj = jsonObject.get(field);
@@ -24,10 +25,10 @@ public class PopupChooseFieldsController {
             String id = UUID.randomUUID().toString();
             radioButton.setId(id);
             radioButton.setToggleGroup(toggleGroup);
-            if (obj instanceof JSONArray) {
-                map.put(id, (JSONArray) obj);
-            } else if (obj instanceof JSONObject) {
-                map.putAll(findJsonArrayInJsonObject((JSONObject) obj, map));
+            if (obj instanceof LinkedList) {
+                map.put(id, (LinkedList) obj);
+            } else if (obj instanceof LinkedHashMap) {
+                map.putAll(findJsonArrayInJsonObject((LinkedHashMap) obj, map));
                 radioButton.setDisable(true);
             } else {
                 radioButton.setDisable(true);
@@ -37,7 +38,7 @@ public class PopupChooseFieldsController {
         return map;
     }
 
-    Map<String, JSONArray> showStage(JSONObject jsonObject) {
+    Map<String, LinkedList> showStage(LinkedHashMap jsonObject) {
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
 
@@ -51,9 +52,9 @@ public class PopupChooseFieldsController {
         headerPopup.setStyle("-fx-font-weight: bold");
         children.add(headerPopup);
 
-        Map<String, JSONArray> rs = findJsonArrayInJsonObject(jsonObject, new LinkedHashMap<>());
-        
-        
+        Map<String, LinkedList> rs = findJsonArrayInJsonObject(jsonObject, new LinkedHashMap<>());
+
+
 //        Set<String> setFields = jsonObject.keySet();
 //        for (String field : setFields) {
 //            Object obj = jsonObject.get(field);
