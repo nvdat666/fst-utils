@@ -6,6 +6,7 @@
 <?import javafx.scene.text.*?>
 <?import org.fxmisc.richtext.*?>
 
+<?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <VBox fx:id="ap" alignment="CENTER" prefHeight="483.0" prefWidth="506.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.fstutils.MainController">
     <TabPane prefHeight="496.0" prefWidth="506.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -42,8 +43,12 @@
                             <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
                             <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
                             <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="272.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
-
-                            <InlineCssTextArea fx:id="outputLogArea" editable="false" layoutX="14.0" layoutY="293.0" prefHeight="146.0" prefWidth="479.0" wrapText="true" />
+                     <VirtualizedScrollPane layoutX="14.0" layoutY="293.0">
+                        <content>
+      
+                                  <InlineCssTextArea fx:id="outputLogArea" editable="false" prefHeight="146.0" prefWidth="479.0" wrapText="true" />
+                        </content>
+                     </VirtualizedScrollPane>
 
                             <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="69.0" layoutX="14.0" layoutY="193.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
                             <Label layoutX="34.0" layoutY="205.0" text="Save to:">
