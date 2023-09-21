@@ -379,13 +379,21 @@ public class MainController {
                                     LinkedHashMap valueObject = (LinkedHashMap) value;
                                     List<String> setFields1 = new ArrayList<>((Set<String>) valueObject.keySet());
 
-                                    for (int i1 = 0; i1 < setFields1.size(); i1++) {
-                                        row.createCell(i1).setCellValue(String.valueOf(valueObject.get(setFields1.get(i1))));
-
+                                    for (String s : setFields1) {
+                                        String valueToSet = String.valueOf(valueObject.get(s));
+                                        if (Utils.isNumeric(valueToSet)) {
+                                            row.createCell(j).setCellValue(Double.parseDouble(valueToSet));
+                                        } else {
+                                            row.createCell(j).setCellValue(String.valueOf(value));
+                                        }
                                     }
                                 } else {
-                                    row.createCell(j).setCellValue(String.valueOf(value));
-
+                                    String valueToSet = String.valueOf(value);
+                                    if (Utils.isNumeric(valueToSet)) {
+                                        row.createCell(j).setCellValue(Double.parseDouble(valueToSet));
+                                    } else {
+                                        row.createCell(j).setCellValue(valueToSet);
+                                    }
                                 }
                             }
                         }
