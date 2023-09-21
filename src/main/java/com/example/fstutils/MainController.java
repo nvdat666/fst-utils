@@ -254,7 +254,6 @@ public class MainController {
         }
 
         writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileName);
-
     }
 
     private boolean validateFile(File file) {
@@ -319,7 +318,7 @@ public class MainController {
 
                     Font headerFont = workbook.createFont();
                     headerFont.setBold(true);
-                    headerFont.setColor(IndexedColors.BLUE.getIndex());
+//                    headerFont.setColor(IndexedColors.BLUE.getIndex());
 
                     CellStyle headerCellStyle = workbook.createCellStyle();
                     headerCellStyle.setFont(headerFont);
@@ -354,10 +353,6 @@ public class MainController {
 
                     updateProgress(progress++, 10);
 
-                    // CellStyle for Age
-                    CellStyle ageCellStyle = workbook.createCellStyle();
-                    ageCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("#"));
-
                     showLog("Creating row data..");
                     Object[] arrayObj = jsonArray.toArray();
                     List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
@@ -377,14 +372,13 @@ public class MainController {
                                 Object value = (component.get(COLUMNs[j]));
                                 if (value instanceof LinkedHashMap) {
                                     LinkedHashMap valueObject = (LinkedHashMap) value;
-                                    List<String> setFields1 = new ArrayList<>((Set<String>) valueObject.keySet());
 
-                                    for (String s : setFields1) {
+                                    for (String s : (Set<String>) valueObject.keySet()) {
                                         String valueToSet = String.valueOf(valueObject.get(s));
                                         if (Utils.isNumeric(valueToSet)) {
                                             row.createCell(j).setCellValue(Double.parseDouble(valueToSet));
                                         } else {
-                                            row.createCell(j).setCellValue(String.valueOf(value));
+                                            row.createCell(j).setCellValue(valueToSet);
                                         }
                                     }
                                 } else {
@@ -412,6 +406,7 @@ public class MainController {
                     return filePath;
                 } catch (Exception e) {
                     updateProgress(0, 10);
+                    showError("Convert not success with exception: " + e.getMessage());
                     throw e;
                 }
 
@@ -429,11 +424,10 @@ public class MainController {
             showSuccess("Convert json successfully!");
             if (checkboxOpenFile.isSelected()) {
                 showSuccess("File will be auto open..!");
-
-                Desktop desktop = Desktop.getDesktop();
                 try {
-                    File fileToOper = new File(filePath);
-                    desktop.open(fileToOper);
+                    Desktop desktop = Desktop.getDesktop();
+                    File fileToOpen = new File(filePath);
+                    desktop.open(fileToOpen);
                 } catch (Exception ex) {
                     showError("Open file not success with exception: " + ex.getMessage());
                 }
@@ -442,7 +436,6 @@ public class MainController {
 
         // Before starting our task, we need to bind our UI values to the properties on the task
         progressBar.progressProperty().bind(task.progressProperty());
-//        outputLogArea.textProperty().bind(task.messageProperty());
 
         // Now, start the task on a background thread
         new Thread(task).start();
@@ -453,7 +446,6 @@ public class MainController {
             outputLogArea.append(" * " + text + "\n", "-fx-fill: black;");
             moveCaretToEnd();
         });
-//        outputLogArea.requestFocus();
     }
 
     public void showError(String text) {
