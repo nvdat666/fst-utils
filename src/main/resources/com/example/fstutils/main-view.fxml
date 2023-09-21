@@ -4,9 +4,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.scene.text.*?>
+<?import org.fxmisc.flowless.*?>
 <?import org.fxmisc.richtext.*?>
 
-<?import org.fxmisc.flowless.VirtualizedScrollPane?>
 <VBox fx:id="ap" alignment="CENTER" prefHeight="483.0" prefWidth="506.0" spacing="20.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.fstutils.MainController">
     <TabPane prefHeight="496.0" prefWidth="506.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
@@ -59,7 +59,7 @@
                             <Button fx:id="buttonChooseDirectory" layoutX="402.0" layoutY="201.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
                             <Button fx:id="buttonOpenDir" layoutX="418.0" layoutY="230.0" mnemonicParsing="false" onAction="#onOpenDir" prefWidth="64.0" text="Open Dir" />
                             <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="234.0" mnemonicParsing="false" text="Auto open file when convert finished" />
-                            <CheckBox fx:id="checkboxGetSourceFromClipBoard" layoutX="34.0" layoutY="101.0" mnemonicParsing="false" onAction="#onActionChangeCheckboxClipboard" text="Get source from clipboard (not recommend)" />
+                            <CheckBox fx:id="checkboxGetSourceFromClipBoard" layoutX="34.0" layoutY="101.0" mnemonicParsing="false" onAction="#onActionChangeCheckboxClipboard" text="Get source from clipboard" />
                         </children></AnchorPane>
                 </content>
             </Tab>
@@ -67,7 +67,8 @@
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
-                            <Label layoutX="220.0" layoutY="23.0" text=" to UyenNT7" />
+                            <Label layoutX="215.0" layoutY="35.0" text="Utils for Tester" />
+                     <Label layoutX="210.0" layoutY="52.0" text="2023 - UyenNT7" />
                         </children></AnchorPane>
                 </content>
             </Tab>
