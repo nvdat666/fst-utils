@@ -67,8 +67,12 @@
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
-                            <Label layoutX="215.0" layoutY="35.0" text="Utils for Tester" />
-                     <Label layoutX="210.0" layoutY="52.0" text="2023 - UyenNT7" />
+                            <Label layoutX="215.0" layoutY="35.0" text="Utils for Tester">
+                        <font>
+                           <Font name="System Bold" size="12.0" />
+                        </font></Label>
+                     <Label layoutX="210.0" layoutY="55.0" text="2023 - UyenNT7" />
+                     <Label layoutX="246.0" layoutY="77.0" text="v1.0" />
                         </children></AnchorPane>
                 </content>
             </Tab>
