@@ -42,13 +42,15 @@
                             <Label fx:id="fileName" layoutX="239.0" layoutY="28.0" text="fileName" />
                             <Label fx:id="type" layoutX="240.0" layoutY="50.0" text="Type" />
                             <Label fx:id="size" layoutX="239.0" layoutY="70.0" text="size" />
-                            <ProgressBar fx:id="progressBar" layoutX="14.0" layoutY="272.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
-                     <VirtualizedScrollPane layoutX="14.0" layoutY="293.0">
-                        <content>
-      
-                                  <InlineCssTextArea fx:id="outputLogArea" editable="false" prefHeight="146.0" prefWidth="479.0" wrapText="true" />
-                        </content>
-                     </VirtualizedScrollPane>
+                            <ProgressBar fx:id="tabConvert_progressBar" layoutX="14.0" layoutY="272.0" prefHeight="18.0" prefWidth="478.0" progress="0.0" />
+                            <VirtualizedScrollPane layoutX="14.0" layoutY="293.0">
+                                <content>
+
+                                    <InlineCssTextArea fx:id="outputLogArea" editable="false" prefHeight="146.0" prefWidth="479.0" wrapText="true" />
+                                </content>
+                            </VirtualizedScrollPane>
+
+
 
                             <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="69.0" layoutX="14.0" layoutY="193.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="478.0" />
                             <Label layoutX="34.0" layoutY="205.0" text="Save to:">
@@ -63,16 +65,46 @@
                         </children></AnchorPane>
                 </content>
             </Tab>
+            <Tab text="Keep screen On">
+                <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                        <children>
+                            <Button fx:id="tabKeepScreen_buttonStartKeepScreen" layoutX="14.0" layoutY="90.0" mnemonicParsing="false" onAction="#startKeepScreen" prefHeight="89.0" prefWidth="96.0" text="Start" textFill="#0f41f5">
+                        <font>
+                           <Font name="System Bold" size="12.0" />
+                        </font></Button>
+                            <Button fx:id="tabKeepScreen_buttonStop" disable="true" layoutX="395.0" layoutY="90.0" mnemonicParsing="false" onAction="#stopKeepScreen" prefHeight="91.0" prefWidth="97.0" text="Stop">
+                        <font>
+                           <Font name="System Bold" size="12.0" />
+                        </font></Button>
+                            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#edeff2" height="90.0" layoutX="124.0" layoutY="90.0" stroke="#d0cbcb" strokeType="INSIDE" strokeWidth="0.5" width="258.0" />
+                            <Label layoutX="20.0" layoutY="21.0" prefWidth="468.0" text="One simple way which use to avoid &quot;Windows desktop Auto lock&quot; is &quot;Switch On/Off NumLock&quot; every 6 seconds." wrapText="true" />
+                            <ComboBox fx:id="tabKeepScreen_comboBoxChooseButton" layoutX="193.0" layoutY="104.0" prefWidth="150.0" />
+                            <Label layoutX="142.0" layoutY="109.0" text="Button">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font>
+                            </Label>
+                            <Label layoutX="142.0" layoutY="144.0" text="Loop">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <TextField fx:id="tabKeepScreen_second" layoutX="193.0" layoutY="140.0" prefHeight="25.0" prefWidth="77.0" promptText="1" text="6" />
+                            <Label layoutX="280.0" layoutY="144.0" text="second" />
+                            <ProgressBar fx:id="tabKeepScreen_progressBar" layoutX="14.0" layoutY="193.0" prefHeight="18.0" prefWidth="477.0" progress="0.0" />
+                            <Label fx:id="tabKeepScreen_logger" layoutX="14.0" layoutY="227.0" text="log" />
+                        </children></AnchorPane>
+                </content>
+            </Tab>
             <Tab text="About">
                 <content>
                     <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                         <children>
-                            <Label layoutX="215.0" layoutY="38.0" text="Utils for Tester">
-                        <font>
-                           <Font name="System Bold" size="12.0" />
-                        </font></Label>
-                     <Label layoutX="214.0" layoutY="58.0" text="2023 - UyenNT7" />
-                     <Label layoutX="246.0" layoutY="76.0" text="v1.0" />
+                            <Label layoutX="211.0" layoutY="38.0" text="Utils for Tester">
+                                <font>
+                                    <Font name="System Bold" size="12.0" />
+                                </font></Label>
+                            <Label layoutX="210.0" layoutY="55.0" text="2023 - UyenNT7" />
                         </children></AnchorPane>
                 </content>
             </Tab>

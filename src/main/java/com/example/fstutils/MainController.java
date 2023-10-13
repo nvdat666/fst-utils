@@ -1,30 +1,31 @@
 package com.example.fstutils;
 
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextField;
 import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.fxmisc.richtext.InlineCssTextArea;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -52,19 +53,44 @@ public class MainController {
     @FXML
     private Button buttonConvert;
     @FXML
+    private Button tabKeepScreen_buttonStartKeepScreen;
+    @FXML
+    private Button tabKeepScreen_buttonStop;
+
+    @FXML
     private Button buttonChooseDirectory;
     @FXML
-    private ProgressBar progressBar;
+    private ProgressBar tabConvert_progressBar;
+    @FXML
+    private ProgressBar tabKeepScreen_progressBar;
     @FXML
     private CheckBox checkboxOpenFile;
     @FXML
     private CheckBox checkboxGetSourceFromClipBoard;
     private String pathDirectoryToSave;
     private File file;
+    @FXML
+    private ComboBox<String> tabKeepScreen_comboBoxChooseButton;
+    @FXML
+    private Label tabKeepScreen_logger;
+    @FXML
+    private TextField tabKeepScreen_second;
+    private KeepScreenOn keepScreenOnClass;
 
     //TODO: keep current dir when choose file
     @FXML
     public void initialize() {
+        initTabConvert();
+        initTabKeepScreen();
+    }
+    private void initTabKeepScreen() {
+        tabKeepScreen_logger.setText("");
+
+        ObservableList<String> comboList = FXCollections.observableArrayList("NumLock", "ScrollLock");
+        tabKeepScreen_comboBoxChooseButton.setItems(comboList);
+        tabKeepScreen_comboBoxChooseButton.getSelectionModel().selectFirst();
+    }
+    private void initTabConvert() {
         clearInformationFile();
         File initialDirectory = new File(System.getProperty("user.home") + File.separator + "Documents");
         labelDirectory.setText(initialDirectory.getAbsolutePath());
@@ -81,21 +107,29 @@ public class MainController {
         type.setText("");
         size.setText("");
     }
-
+    
+    String backupDirectory;
     @FXML
     protected void onSelectFileClick(ActionEvent e) {
 
         Stage stage = (Stage) buttonSelectFile.getScene().getWindow();
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choose file..");
-        fileChooser.setInitialDirectory(
-                new File(System.getProperty("user.home") + File.separator + "Documents")
-        );
+        String initDir;
+        if (backupDirectory != null && !backupDirectory.isEmpty() && !backupDirectory.isBlank()) {
+            initDir = backupDirectory;
+        } else {
+            initDir = System.getProperty("user.home") + File.separator + "Documents";
+        }
+               
+        fileChooser.setInitialDirectory(new File(initDir));
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Text Files", "*.json", "*.txt"));
+                new FileChooser.ExtensionFilter("Text Files (*.json, *.txt)", "*.json", "*.txt"));
 
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
+            backupDirectory = file.getParent();
+            
             this.file = file;
             String fileNameStr = file.getName();
             fileName.setText(fileNameStr);
@@ -108,6 +142,48 @@ public class MainController {
         } else {
             clearInformationFile();
         }
+    }
+
+    @FXML
+    protected void startKeepScreen(ActionEvent e) {
+        keepScreenOnClass = new KeepScreenOn();
+        long ms;
+        try {
+            ms = Long.parseLong(tabKeepScreen_second.getText());
+        } catch (Exception e1) {
+            tabKeepScreen_logger.setText("Invalid second!");
+            return;
+        }
+        if (ms < 6) {
+            tabKeepScreen_logger.setText("Second should be greater than 6!");
+            return;
+        }
+
+        keepScreenOnClass.setMilisSecond(ms * 1000);
+        keepScreenOnClass.setButton(tabKeepScreen_comboBoxChooseButton.getValue());
+        
+        keepScreenOnClass.start();
+        
+        tabKeepScreen_logger.setText("Keep screen is running..");
+        tabKeepScreen_progressBar.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+        tabKeepScreen_buttonStartKeepScreen.setDisable(true);
+        tabKeepScreen_buttonStop.setDisable(false);
+        tabKeepScreen_comboBoxChooseButton.setDisable(true);
+        tabKeepScreen_second.setDisable(true);
+    }
+
+    @FXML
+    protected void stopKeepScreen(ActionEvent e) {
+        if (keepScreenOnClass != null) {
+            keepScreenOnClass.interrupt();
+        }
+
+        tabKeepScreen_logger.setText("Keep screen is stopped..");
+        tabKeepScreen_progressBar.setProgress(0);
+        tabKeepScreen_buttonStartKeepScreen.setDisable(false);
+        tabKeepScreen_buttonStop.setDisable(true);
+        tabKeepScreen_comboBoxChooseButton.setDisable(false);
+        tabKeepScreen_second.setDisable(false);
     }
 
     @FXML
@@ -250,7 +326,10 @@ public class MainController {
             SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("HH-mm-ss_dd-MM-yyyy");
             fileName = "From_Clipboard_" + SIMPLE_DATE_FORMAT.format(new Date()) + ".xlsx";
         } else {
-            fileName = file.getName().replaceAll(".json", ".xlsx");
+            fileName = file.getName();
+            int i = fileName.lastIndexOf('.');
+            String name = fileName.substring(0,i);
+            fileName = name + ".xlsx";
         }
 
         writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileName);
@@ -292,7 +371,7 @@ public class MainController {
     }
 
     private void writeObjects2ExcelFile(LinkedList jsonArray, String filePath) {
-
+        buttonConvert.setDisable(true);
         // Create a background Task
         Task<String> task = new Task<>() {
             @Override
@@ -339,6 +418,7 @@ public class MainController {
                             Cell cell2 = headerRow2.createCell(i);
                             cell2.setCellValue(setFields1.get(i));
                             cell2.setCellStyle(headerCellStyle);
+                            sheet.autoSizeColumn(i, true);
                         }
 
                         sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, setFields1.size() - 1));
@@ -347,6 +427,8 @@ public class MainController {
                             Cell cell = headerRow.createCell(col);
                             cell.setCellValue(COLUMNs[col]);
                             cell.setCellStyle(headerCellStyle);
+                            sheet.autoSizeColumn(col);
+                            
                         }
                     }
 
@@ -372,13 +454,14 @@ public class MainController {
                                 Object value = (component.get(COLUMNs[j]));
                                 if (value instanceof LinkedHashMap) {
                                     LinkedHashMap valueObject = (LinkedHashMap) value;
-
+                                    
+                                    int idx = 0;
                                     for (String s : (Set<String>) valueObject.keySet()) {
                                         String valueToSet = String.valueOf(valueObject.get(s));
                                         if (Utils.isNumeric(valueToSet)) {
-                                            row.createCell(j).setCellValue(Double.parseDouble(valueToSet));
+                                            row.createCell(idx++).setCellValue(Double.parseDouble(valueToSet));
                                         } else {
-                                            row.createCell(j).setCellValue(valueToSet);
+                                            row.createCell(idx++).setCellValue(valueToSet);
                                         }
                                     }
                                 } else {
@@ -406,8 +489,10 @@ public class MainController {
                     return filePath;
                 } catch (Exception e) {
                     updateProgress(0, 10);
-                    showError("Convert not success with exception: " + e.getMessage());
                     throw e;
+                }
+                finally {
+                    buttonConvert.setDisable(false);
                 }
 
             }
@@ -415,7 +500,7 @@ public class MainController {
 
         // This method allows us to handle any Exceptions thrown by the task
         task.setOnFailed(wse -> {
-            showError(wse.getSource().getException().getMessage());
+            showError("Convert not success with exception: " + wse.getSource().getException().getMessage());
             wse.getSource().getException().printStackTrace();
         });
 
@@ -434,8 +519,15 @@ public class MainController {
             }
         });
 
+//        task.setOnCancelled(wse -> {
+//            buttonConvert.setOnAction(e -> {onClickButtonConvert()});
+//            
+//        });
+//        buttonConvert.setText("Stop");
+//        buttonConvert.setOnAction(e -> task.cancel());
+
         // Before starting our task, we need to bind our UI values to the properties on the task
-        progressBar.progressProperty().bind(task.progressProperty());
+        tabConvert_progressBar.progressProperty().bind(task.progressProperty());
 
         // Now, start the task on a background thread
         new Thread(task).start();

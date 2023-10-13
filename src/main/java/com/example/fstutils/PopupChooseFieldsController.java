@@ -1,5 +1,6 @@
 package com.example.fstutils;
 
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -54,6 +55,22 @@ public class PopupChooseFieldsController {
 
         Map<String, LinkedList> rs = findJsonArrayInJsonObject(jsonObject, new LinkedHashMap<>());
 
+        ObservableList<Toggle> listToggle = toggleGroup.getToggles();
+        if (!listToggle.isEmpty()) {
+            int countFieldValid = 0;
+            String tempId = null;
+            for (Toggle toggle : listToggle) {
+                RadioButton radioButton = (RadioButton) toggle;
+                if (!radioButton.isDisabled()) {
+                    countFieldValid++;
+                    tempId = radioButton.getId();
+                }
+            }
+            if (countFieldValid == 1) {
+                idToGet = tempId;
+                return rs;
+            }
+        }
 
 //        Set<String> setFields = jsonObject.keySet();
 //        for (String field : setFields) {
