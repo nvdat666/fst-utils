@@ -585,26 +585,27 @@ public class MainController {
                         if (!(fieldData instanceof LinkedList)) {
                             mapHeaderWithIdxColumn.put(field, colIdx);
                             
-                            setValue(headerRow, colIdx, field, headerCellStyle);
-                            sheet.autoSizeColumn(colIdx++);
+                            setValue(headerRow, colIdx++, field, headerCellStyle);
                         } else {
                             LinkedList child = (LinkedList) fieldData;
 
-                            while (child.isEmpty() && idx < jsonArray.size()) {
-                                child = (LinkedList) ((LinkedHashMap) jsonArray.get(++idx)).get(field);
+                            while ((child == null || child.isEmpty()) && idx < jsonArray.size()) {
+                                child = (LinkedList) ((LinkedHashMap) jsonArray.get(idx++)).get(field);
                             }
 
-                            if (!child.isEmpty()) {
+                            if (child != null && !child.isEmpty()) {
                                 LinkedHashMap firstObjChild = (LinkedHashMap) child.get(0);
 
                                 Set<String> headerChildSet = (Set<String>) firstObjChild.keySet();
                                 for (String headerChild : headerChildSet) {
                                     mapHeaderWithIdxColumn.put(field + "__" + headerChild, colIdx);
 
-                                    setValue(headerRow, colIdx, field + "__" + headerChild, headerCellStyle);
-                                    sheet.autoSizeColumn(colIdx++);
+                                    setValue(headerRow, colIdx++, field + "__" + headerChild, headerCellStyle);
                                     
                                 }
+                            } else {
+                                mapHeaderWithIdxColumn.put(field , colIdx);
+                                setValue(headerRow, colIdx++, field , headerCellStyle);
                             }
                         }
                     }
