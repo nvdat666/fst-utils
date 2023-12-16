@@ -60,8 +60,8 @@
                             <Label fx:id="labelDirectory" layoutX="89.0" layoutY="205.0" text="No directory selected." />
                             <Button fx:id="buttonChooseDirectory" layoutX="402.0" layoutY="201.0" mnemonicParsing="false" onAction="#onSelectDirectoryClick" text="Choose Dir.." />
                             <Button fx:id="buttonOpenDir" layoutX="418.0" layoutY="230.0" mnemonicParsing="false" onAction="#onOpenDir" prefWidth="64.0" text="Open Dir" />
-                            <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="234.0" mnemonicParsing="false" text="Auto open file when convert finished" />
-                            <CheckBox fx:id="checkboxGetSourceFromClipBoard" layoutX="34.0" layoutY="101.0" mnemonicParsing="false" onAction="#onActionChangeCheckboxClipboard" text="Get source from clipboard" />
+                            <CheckBox fx:id="checkboxOpenFile" layoutX="89.0" layoutY="234.0" mnemonicParsing="false" selected="true" text="Auto open file when convert finished" />
+                            <CheckBox fx:id="checkboxGetSourceFromClipBoard" layoutX="34.0" layoutY="101.0" mnemonicParsing="false" onAction="#onActionChangeCheckboxClipboard" selected="true" text="Get source from clipboard" />
                         </children></AnchorPane>
                 </content>
             </Tab>

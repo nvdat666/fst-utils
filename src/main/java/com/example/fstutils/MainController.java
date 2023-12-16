@@ -332,7 +332,7 @@ public class MainController {
             fileName = name + ".xlsx";
         }
 
-        writeObjects2ExcelFile(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileName);
+        writeObjects2ExcelFile2(jsonArrayToConvert, pathDirectoryToSave + "\\" + fileName);
     }
 
     private boolean validateFile(File file) {
@@ -533,6 +533,212 @@ public class MainController {
         new Thread(task).start();
     }
 
+ 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void writeObjects2ExcelFile2(LinkedList jsonArray, String filePath) {
+        buttonConvert.setDisable(true);
+        // Create a background Task
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                try {
+                    int progress = 0;
+                    updateProgress(progress++, 10);
+
+              
+                    showLog("Creating excel file..");
+                    Workbook workbook = new XSSFWorkbook();
+                    updateProgress(progress++, 10);
+
+
+                    CreationHelper createHelper = workbook.getCreationHelper();
+                    showLog("Creating sheet 'result'..");
+                    Sheet sheet = workbook.createSheet("result");
+                    updateProgress(progress++, 10);
+
+                    Font headerFont = workbook.createFont();
+                    headerFont.setBold(true);
+//                    headerFont.setColor(IndexedColors.BLUE.getIndex());
+
+                    CellStyle headerCellStyle = workbook.createCellStyle();
+                    headerCellStyle.setFont(headerFont);
+
+                    // Header
+                    showLog("Creating header..");
+
+                    int colIdx = 0;
+                    Row headerRow = sheet.createRow(0);
+
+                    int idx = 0;
+                    LinkedHashMap firstObj = (LinkedHashMap) jsonArray.get(idx);
+                    
+                    Map<String, Integer> mapHeaderWithIdxColumn = new HashMap<>();
+                    
+                    for (String field :  (Set<String>) firstObj.keySet()) {
+                        Object fieldData = firstObj.get(field);
+
+                        while (fieldData == null && idx < jsonArray.size()) {
+                            fieldData = ((LinkedHashMap) jsonArray.get(idx++)).get(field);
+                        }
+                        idx = 0;
+                        
+                        if (!(fieldData instanceof LinkedList)) {
+                            mapHeaderWithIdxColumn.put(field, colIdx);
+                            
+                            setValue(headerRow, colIdx, field, headerCellStyle);
+                            sheet.autoSizeColumn(colIdx++);
+                        } else {
+                            LinkedList child = (LinkedList) fieldData;
+
+                            while (child.isEmpty() && idx < jsonArray.size()) {
+                                child = (LinkedList) ((LinkedHashMap) jsonArray.get(++idx)).get(field);
+                            }
+
+                            if (!child.isEmpty()) {
+                                LinkedHashMap firstObjChild = (LinkedHashMap) child.get(0);
+
+                                Set<String> headerChildSet = (Set<String>) firstObjChild.keySet();
+                                for (String headerChild : headerChildSet) {
+                                    mapHeaderWithIdxColumn.put(field + "__" + headerChild, colIdx);
+
+                                    setValue(headerRow, colIdx, field + "__" + headerChild, headerCellStyle);
+                                    sheet.autoSizeColumn(colIdx++);
+                                    
+                                }
+                            }
+                        }
+                    }
+                    
+                    updateProgress(progress++, 10);
+
+                    showLog("Creating row data..");
+                    Object[] arrayObj = jsonArray.toArray();
+                    List<Object> list = Arrays.stream(arrayObj).collect(Collectors.toList());
+                    List<List<Object>> fullList = Utils.partition(list, (int) Math.ceil(list.size() / 6d));
+                    
+                    int countRecord = 0;
+                    int rowIdx = 1;
+                    
+                    for (List<Object> patrionList : fullList) {
+                        countRecord += patrionList.size();
+                        
+                        for (Object o : patrionList) {
+                            LinkedHashMap component = (LinkedHashMap) o;
+
+                            int backupRowIdx = rowIdx;
+                            int maxRow = rowIdx;
+                            Row row = sheet.createRow(rowIdx);
+
+                            for (String field : (Set<String>) component.keySet()) {
+                                Object fieldData = component.get(field);
+
+                                if (fieldData instanceof LinkedList) {
+                                    LinkedList childData = (LinkedList) fieldData;
+                                    if (childData.isEmpty()) {
+                                        continue;
+                                    }
+                                    for (Object object : childData) {
+                                        if (rowIdx > maxRow) {
+                                            maxRow = rowIdx;
+                                        }
+                                        LinkedHashMap child = (LinkedHashMap) object;
+                                       
+                                        for (String fieldOfChild : (Set<String>) child.keySet()) {
+                                            String key = field + "__" + fieldOfChild;
+                                            int idxHeader = mapHeaderWithIdxColumn.get(key);
+                                            setValue(row, idxHeader, child.get(fieldOfChild));
+                                        }
+                                       
+                                        rowIdx++;
+                                        row = sheet.getRow(rowIdx) == null ? sheet.createRow(rowIdx) : sheet.getRow(rowIdx);
+                                    }
+
+                                    row = sheet.getRow(backupRowIdx);
+                                    rowIdx = backupRowIdx;
+                                } else {
+                                    Integer idxHeader = mapHeaderWithIdxColumn.getOrDefault(field, null);
+                                    if (idxHeader != null) {
+                                        setValue(row, idxHeader, component.get(field));
+                                    }
+                                }
+                            }
+                            rowIdx = maxRow + 1;
+                        }
+                        
+                        showLog("Created " + countRecord + " of " + list.size() + " row.");
+                        updateProgress(progress++, 10);
+                    }
+
+                    showLog("Saving file to directory..");
+                    FileOutputStream fileOut = new FileOutputStream(filePath);
+                    workbook.write(fileOut);
+                    fileOut.close();
+                    workbook.close();
+                    updateProgress(10, 10);
+                    showSuccess("File has been saved to '" + filePath + "'.");
+
+                    return filePath;
+                } catch (Exception e) {
+                    updateProgress(0, 10);
+                    throw e;
+                }
+                finally {
+                    buttonConvert.setDisable(false);
+                }
+
+            }
+        };
+
+        // This method allows us to handle any Exceptions thrown by the task
+        task.setOnFailed(wse -> {
+            showError("Convert not success with exception: " + wse.getSource().getException().getMessage());
+            wse.getSource().getException().printStackTrace();
+        });
+
+        // If the task completed successfully, perform other updates here
+        task.setOnSucceeded(wse -> {
+            showSuccess("Convert json successfully!");
+            if (checkboxOpenFile.isSelected()) {
+                showSuccess("File will be auto open..!");
+                try {
+                    Desktop desktop = Desktop.getDesktop();
+                    File fileToOpen = new File(filePath);
+                    desktop.open(fileToOpen);
+                } catch (Exception ex) {
+                    showError("Open file not success with exception: " + ex.getMessage());
+                }
+            }
+        });
+
+//        task.setOnCancelled(wse -> {
+//            buttonConvert.setOnAction(e -> {onClickButtonConvert()});
+//            
+//        });
+//        buttonConvert.setText("Stop");
+//        buttonConvert.setOnAction(e -> task.cancel());
+
+        // Before starting our task, we need to bind our UI values to the properties on the task
+        tabConvert_progressBar.progressProperty().bind(task.progressProperty());
+
+        // Now, start the task on a background thread
+        new Thread(task).start();
+    }
+
+    public void setValue(Row row, int idxColumn, Object value) {
+        setValue(row, idxColumn, value, null);
+    }    
+    public void setValue(Row row, int idxColumn, Object value, CellStyle style) {
+        String valueToSet = String.valueOf(value);
+        Cell cell = row.createCell(idxColumn);
+        if (style != null) {
+            cell.setCellStyle(style);
+        }
+        if (Utils.isNumeric(valueToSet)) {
+            cell.setCellValue(Double.parseDouble(valueToSet));
+        } else {
+            cell.setCellValue(valueToSet);
+        }
+    }
     public void showLog(String text) {
         Platform.runLater(() -> {
             outputLogArea.append(" * " + text + "\n", "-fx-fill: black;");
